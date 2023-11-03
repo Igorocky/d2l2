@@ -1,0 +1,29 @@
+Creation of virtual environments is done by executing the command venv:
+
+python -m venv .venv
+
+---------------------------------------------------------------------------------------------------------------------
+
+Command to activate virtual environment
+
+".venv/Scripts/activate.bat"
+
+---------------------------------------------------------------------------------------------------------------------
+
+pip freeze > requirements.txt
+
+pip install -r requirements.txt
+
+---------------------------------------------------------------------------------------------------------------------
+
+Add the virtualenv as a jupyter kernel
+
+(venv)$ ipython kernel install --name "d2l2-venv" --user
+
+---------------------------------------------------------------------------------------------------------------------
+
+Start JupyterLab using:
+
+jupyter lab
+
+---------------------------------------------------------------------------------------------------------------------
