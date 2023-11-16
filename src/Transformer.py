@@ -7,7 +7,7 @@ import math
 # https://github.com/karpathy/nanoGPT.git
 
 class SelfAttention(nn.Module):
-    def __init__(self, embLen, headCnt, bias, dropout, ctxLen):
+    def __init__(self, embLen, headCnt, bias, dropout, maxCtxLen):
         super().__init__()
         self.embLen = embLen
         self.headCnt = headCnt
@@ -15,14 +15,14 @@ class SelfAttention(nn.Module):
         self.headSize = embLen // headCnt
         self.bias = bias
         self.dropout = dropout
-        self.ctxLen = ctxLen
+        self.maxCtxLen = maxCtxLen
         self.attScale = 1.0 / math.sqrt(self.headSize)
         self.wQkv = nn.Linear(embLen, 3 * embLen, bias=bias)
         self.wOut = nn.Linear(embLen, embLen, bias=bias)
         self.dropout = nn.Dropout(dropout)
         self.register_buffer(
             "mask",
-            (torch.tril(torch.ones(ctxLen, ctxLen)) == 0).view(1, 1, ctxLen, ctxLen)
+            (torch.tril(torch.ones(maxCtxLen, maxCtxLen)) == 0).view(1, 1, maxCtxLen, maxCtxLen)
         )
 
     def forward(self, x):
@@ -63,10 +63,10 @@ class FeedForward(nn.Module):
 
 class Block(nn.Module):
 
-    def __init__(self, embLen, headCnt, bias, dropout, ctxLen):
+    def __init__(self, embLen, headCnt, bias, dropout, maxCtxLen):
         super().__init__()
         self.ln1 = nn.LayerNorm(embLen, bias=bias)
-        self.attn = SelfAttention(embLen, headCnt, bias, dropout, ctxLen)
+        self.attn = SelfAttention(embLen, headCnt, bias, dropout, maxCtxLen)
         self.ln2 = nn.LayerNorm(embLen, bias=bias)
         self.ff = FeedForward(embLen, bias, dropout)
 
@@ -75,3 +75,59 @@ class Block(nn.Module):
         x = x + self.ff(self.ln2(x))
         return x
 
+class Transformer(nn.Module):
+    def __init__(self, tokenCnt, embLen, headCnt, bias, dropout, maxCtxLen):
+        super().__init__()
+        self.tokenCnt = tokenCnt
+        self.embLen = embLen
+        self.headCnt = headCnt
+        self.bias = bias
+        self.dropout = dropout
+        self.maxCtxLen = maxCtxLen
+        self.wte = nn.Embedding(tokenCnt, embLen),
+        self.wpe = nn.Embedding(maxCtxLen, embLen),
+        self.drop = nn.Dropout(dropout),
+        self.blocks = nn.ModuleList([
+            Block(embLen=embLen, headCnt=headCnt, bias=bias, dropout=dropout, maxCtxLen=maxCtxLen)
+            for _ in range(headCnt)
+        ]),
+        self.lnOut = nn.LayerNorm(embLen, bias=bias)
+        self.wOut = nn.Linear(embLen, tokenCnt, bias=False)
+
+        self.apply(self._init_weights)
+        for pn, p in self.named_parameters():
+            print(f'{pn=}')
+            if pn.endswith('lin2.weight'):
+                torch.nn.init.normal_(p, mean=0.0, std=0.02/math.sqrt(2 * headCnt))
+
+    def _init_weights(self, module):
+        if isinstance(module, nn.Linear):
+            torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
+            if module.bias is not None:
+                torch.nn.init.zeros_(module.bias)
+        elif isinstance(module, nn.Embedding):
+            torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
+
+    def forward(self, idx, targets=None):
+        B, T = idx.size()
+        assert T <= self.maxCtxLen, f"Cannot forward sequence of length {T}, maxCtxLen is {self.maxCtxLen}"
+        pos = torch.arange(0, T, dtype=torch.long)
+
+        # forward the GPT model itself
+        tok_emb = self.wte(idx)  # (B, T, C)
+        pos_emb = self.wpe(pos)  # (B, T, C)
+        x = self.drop(tok_emb + pos_emb)
+        for block in self.blocks:
+            x = block(x)
+        x = self.lnOut(x)
+
+        if targets is not None:
+            # if we are given some desired targets also calculate the loss
+            logits = self.wOut(x)
+            loss = F.cross_entropy(logits.view(-1, self.tokenCnt), targets.view(-1), ignore_index=-1)
+        else:
+            # inference-time mini-optimization: only forward the wOut on the very last position
+            logits = self.wOut(x[:, [-1], :]) # note: using list [-1] to preserve the time dim
+            loss = None
+
+        return logits, loss
