@@ -131,3 +131,15 @@ class Transformer(nn.Module):
             loss = None
 
         return logits, loss
+
+    @torch.no_grad()
+    def generate(self, idx, max_new_tokens, temperature=1.0):
+        for _ in range(max_new_tokens):
+            ctx = idx if idx.size(1) <= self.maxCtxLen else idx[:, -self.maxCtxLen:]
+            logits, _ = self(ctx)
+            logits = logits[:, -1, :] / temperature
+            probs = F.softmax(logits, dim=-1)
+            idx_next = torch.multinomial(probs, num_samples=1)
+            idx = torch.cat((idx, idx_next), dim=1)
+
+        return idx
