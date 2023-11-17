@@ -25,11 +25,13 @@ def trainLoop(epochNum,batchesPerEpoch,batchSize,model,optimizer,dataLoader):
             batch_end = batch_begin+batchSize
             Xb = Xtr[batch_begin:batch_end]
             Yb = Ytr[batch_begin:batch_end]
-            loss = model.calcLoss(Xb,Yb)
+            model.train()
+            _,loss = model(Xb,Yb)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
         with torch.no_grad():
-            trLoss = model.calcLoss(Xtr,Ytr)
-            valLoss = model.calcLoss(Xval,Yval)
+            model.eval()
+            _,trLoss = model(Xtr,Ytr)
+            _,valLoss = model(Xval,Yval)
             print(f'epoch:{epoch}, trLoss={trLoss.item():.4f}, valLoss={valLoss.item():.4f}')

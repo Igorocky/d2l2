@@ -22,7 +22,7 @@ class MLP(nn.Module):
         self.lin8 = nn.Linear(hidDim,hidDim)
         self.lin9 = nn.Linear(hidDim,ctxLen*numOfTokens)
 
-    def forward(self,x):
+    def forward(self,x,targets=None):
         # x: B,T
         x = self.emb(x).view(-1,self.ctxLen*self.embSize)
         # x: B,T,C
@@ -39,29 +39,23 @@ class MLP(nn.Module):
 
         x = self.lin9(x)
         
-        x = x.view(-1,self.ctxLen,self.numOfTokens)
+        y = x.view(-1,self.ctxLen,self.numOfTokens)
         # x: B,T,C
-        return x
 
-    def calcLoss(self,X,Y):
-        Yp = self(X)
-        logits = Yp.view(-1,self.numOfTokens)
-        targets = Y.view(-1)
-        return F.cross_entropy(logits,targets)
-    
+        if targets == None:
+            loss = None
+        else:
+            loss = F.cross_entropy(y.view(-1,self.numOfTokens),targets.view(-1), ignore_index=-1)
+        return y, loss
+
     @torch.no_grad()
-    def generate(self,ctx,resLen):
-        if len(ctx) < self.ctxLen:
-            ctx = ' '*(self.ctxLen-len(ctx)) + ctx
-        elif len(ctx) > self.ctxLen:
-            ctx = ctx[-self.ctxLen:]
-        res = []
-        while len(res) < resLen:
-            x = torch.tensor([self.char2int[ch] for ch in ctx]).unsqueeze(0)
-            logits = self(x)[0,-1]
-            probs = F.softmax(logits,dim=0)
-            nextToken = torch.multinomial(probs, 1)
-            nextChar = self.int2char[nextToken[0].item()]
-            res.append(nextChar)
-            ctx = ctx[1:] + nextChar
-        return ''.join(res)
+    def generate(self, idx, max_new_tokens, temperature=1.0):
+        for _ in range(max_new_tokens):
+            ctx = idx if idx.size(1) <= self.ctxLen else idx[:, -self.ctxLen:]
+            logits, _ = self(ctx)
+            logits = logits[:, -1, :] / temperature
+            probs = F.softmax(logits, dim=-1)
+            idx_next = torch.multinomial(probs, num_samples=1)
+            idx = torch.cat((idx, idx_next), dim=1)
+
+        return idx

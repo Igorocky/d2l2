@@ -23,3 +23,9 @@ class DataLoader:
         Xval = torch.tensor(X[trSamplNum:])
         Yval = torch.tensor(Y[trSamplNum:])
         return Xtr, Ytr, Xval, Yval
+
+    def strToInts(self,str):
+        return torch.tensor([self.char2int[ch] for ch in str.lower()])
+
+    def intsToStr(self,ints):
+        return ''.join([self.int2char[i] for i in ints.numpy()])
