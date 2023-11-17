@@ -16,9 +16,9 @@ def showParamsStats(model, layerNameFilter=None, figsize=(20,10)):
         axs[i].legend(loc='upper left', bbox_to_anchor=(1.0, 1.0))
     plt.tight_layout()
 
-def trainLoop(epochNum,batchesPerEpoch,batchSize,model,optimizer,dataLoader):
+def trainLoop(epochNum,batchesPerEpoch,batchSize,ctxLen,model,optimizer,dataLoader):
     for epoch in range(epochNum):
-        Xtr,Ytr,Xval,Yval = dataLoader.getSamples(ctxLen=model.ctxLen, trSamplNum=batchesPerEpoch*batchSize)
+        Xtr,Ytr,Xval,Yval = dataLoader.getSamples(ctxLen=ctxLen, trSamplNum=batchesPerEpoch*batchSize)
         batchIdxs = [i for i in range(len(Xtr))[::batchSize]]
         random.shuffle(batchIdxs)
         for batch_begin in batchIdxs:

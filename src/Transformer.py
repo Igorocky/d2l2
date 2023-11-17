@@ -75,8 +75,9 @@ class Block(nn.Module):
         x = x + self.ff(self.ln2(x))
         return x
 
+
 class Transformer(nn.Module):
-    def __init__(self, tokenCnt, embLen, headCnt, bias, dropout, maxCtxLen):
+    def __init__(self, tokenCnt, embLen, headCnt, layerCnt, bias, dropout, maxCtxLen):
         super().__init__()
         self.tokenCnt = tokenCnt
         self.embLen = embLen
@@ -84,21 +85,21 @@ class Transformer(nn.Module):
         self.bias = bias
         self.dropout = dropout
         self.maxCtxLen = maxCtxLen
-        self.wte = nn.Embedding(tokenCnt, embLen),
-        self.wpe = nn.Embedding(maxCtxLen, embLen),
-        self.drop = nn.Dropout(dropout),
+        self.wte = nn.Embedding(tokenCnt, embLen)
+        self.wpe = nn.Embedding(maxCtxLen, embLen)
+        self.drop = nn.Dropout(dropout)
         self.blocks = nn.ModuleList([
             Block(embLen=embLen, headCnt=headCnt, bias=bias, dropout=dropout, maxCtxLen=maxCtxLen)
-            for _ in range(headCnt)
-        ]),
+            for _ in range(layerCnt)
+        ])
         self.lnOut = nn.LayerNorm(embLen, bias=bias)
         self.wOut = nn.Linear(embLen, tokenCnt, bias=False)
 
         self.apply(self._init_weights)
         for pn, p in self.named_parameters():
-            print(f'{pn=}')
+            # print(f'{pn=}')
             if pn.endswith('lin2.weight'):
-                torch.nn.init.normal_(p, mean=0.0, std=0.02/math.sqrt(2 * headCnt))
+                torch.nn.init.normal_(p, mean=0.0, std=0.02 / math.sqrt(2 * headCnt))
 
     def _init_weights(self, module):
         if isinstance(module, nn.Linear):
@@ -127,7 +128,7 @@ class Transformer(nn.Module):
             loss = F.cross_entropy(logits.view(-1, self.tokenCnt), targets.view(-1), ignore_index=-1)
         else:
             # inference-time mini-optimization: only forward the wOut on the very last position
-            logits = self.wOut(x[:, [-1], :]) # note: using list [-1] to preserve the time dim
+            logits = self.wOut(x[:, [-1], :])  # note: using list [-1] to preserve the time dim
             loss = None
 
         return logits, loss

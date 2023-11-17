@@ -3,13 +3,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class MLP(nn.Module):
-    def __init__(self,numOfTokens,ctxLen,embSize,char2int,int2char):
+    def __init__(self,numOfTokens,ctxLen,embSize):
         super().__init__()
         self.numOfTokens = numOfTokens
         self.ctxLen = ctxLen
         self.embSize = embSize
-        self.char2int = char2int
-        self.int2char = int2char
         self.emb = nn.Embedding(numOfTokens,embSize)
         hidDim = 1000
         self.lin1 = nn.Linear(ctxLen*embSize,hidDim)
