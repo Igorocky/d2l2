@@ -1,0 +1,2 @@
+python server.py 89.64.36.96 50007
+python client.py 89.64.36.96 50007 111222333qqqwwweee
