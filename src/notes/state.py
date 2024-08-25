@@ -7,7 +7,7 @@ class NotesState:
     def __init__(self, window_width: int, window_height: int):
         self._mark_needs_rerender()
         keyboard_width = window_width * 0.9
-        keyboard_height = keyboard_width * 0.15
+        keyboard_height = keyboard_width * (15 / 122.5)
         self.keyboard = Keyboard(
             Rect((window_width - keyboard_width) / 2, (window_height - keyboard_height) / 2, keyboard_width,
                  keyboard_height))

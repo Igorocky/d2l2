@@ -4,10 +4,10 @@ import pygame
 import pygame.locals as pg
 from pygame import Surface, SurfaceType
 
-from common import WHITE
+from common import GRAY
 from state import NotesState
 
-WINDOW_WIDTH = 1000
+WINDOW_WIDTH = 1800
 WINDOW_HEIGHT = 600
 
 pygame.init()
@@ -38,7 +38,7 @@ def handle_events(state: NotesState):
 
 def render_state(state: NotesState):
     if state.needs_rerender():
-        DISP.fill(WHITE)
+        DISP.fill(GRAY)
         state.render(DISP)
         state.mark_rendered()
         pygame.display.update()
