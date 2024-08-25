@@ -1,33 +1,25 @@
-import random as rnd
+from pygame import SurfaceType, Surface, Rect
 
-from pygame import Rect
+from keyboard import Keyboard
 
 
 class NotesState:
-    def __init__(self, max_x: int, max_y: int, min_x: int = 0, min_y: int = 0, rect_width: int = 30, rect_height: int = 30):
-        self._needs_rerender = True
-        self.min_x = min_x
-        self.min_y = min_y
-        self.max_x = max_x
-        self.max_y = max_y
-        self.rect_width = rect_width
-        self.rect_height = rect_height
-        self.generate_next_rect()
+    def __init__(self, window_width: int, window_height: int):
+        self._mark_needs_rerender()
+        keyboard_width = window_width * 0.9
+        keyboard_height = keyboard_width * 0.15
+        self.keyboard = Keyboard(
+            Rect((window_width - keyboard_width) / 2, (window_height - keyboard_height) / 2, keyboard_width,
+                 keyboard_height))
 
-    def mark_rendered(self):
+    def mark_rendered(self) -> None:
         self._needs_rerender = False
 
-    def mark_needs_rerender(self):
-        self._needs_rerender = True
-
-    def needs_rerender(self):
+    def needs_rerender(self) -> bool:
         return self._needs_rerender
 
-    def generate_next_rect(self):
-        self.mark_needs_rerender()
-        self.rect = Rect(
-            rnd.randint(self.min_x, self.max_x - self.rect_width),
-            rnd.randint(self.min_y, self.max_y - self.rect_height),
-            self.rect_width,
-            self.rect_height
-        )
+    def render(self, disp: Surface | SurfaceType):
+        self.keyboard.render(disp)
+
+    def _mark_needs_rerender(self):
+        self._needs_rerender = True
