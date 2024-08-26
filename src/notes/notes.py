@@ -8,7 +8,7 @@ from common import GRAY
 from state import NotesState
 
 WINDOW_WIDTH = 1800
-WINDOW_HEIGHT = 600
+WINDOW_HEIGHT = 900
 
 pygame.init()
 

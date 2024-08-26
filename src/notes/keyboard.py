@@ -1,25 +1,7 @@
 import pygame
 from pygame import Rect, Surface, SurfaceType
 
-from common import DARK_GRAY
-from common import YELLOWISH
-
-MAX_NOTE = 87
-WHITE_KEYS_IN_OCTAVE = {0, 2, 4, 5, 7, 9, 11}
-
-
-def is_white_key(note: int) -> bool:
-    if note == 0 or note == 2:
-        return True
-    if note == 1:
-        return False
-    note_12 = (note - 3) % 12
-    return note_12 in WHITE_KEYS_IN_OCTAVE
-
-
-WHITE_NOTES = [note for note in range(MAX_NOTE + 1) if is_white_key(note)]
-NUM_OF_WHITE_KEYS = len(WHITE_NOTES)
-NOTE_TO_WHITE_KEY_IDX: dict[int, int] = {note: idx for idx, note in enumerate(WHITE_NOTES)}
+from common import DARK_GRAY, WHITE_KEYS, MAX_NOTE, is_white_key, NOTE_TO_WHITE_KEY_IDX, NUM_OF_WHITE_KEYS, YELLOWISH
 
 
 class Keyboard:
@@ -31,7 +13,7 @@ class Keyboard:
         black_key_width = white_key_width * (1.1 / 2.3)
         black_key_height = keyboard_height * (10 / 15)
         self.white_key_rects = [Rect(rect.left + i * white_key_width, rect.top, white_key_width, keyboard_height) for i
-                                in range(len(WHITE_NOTES))]
+                                in range(len(WHITE_KEYS))]
         self.black_key_rects = []
         for note in range(MAX_NOTE + 1):
             if not is_white_key(note):
