@@ -18,6 +18,9 @@ TREBLE_MIDDLE_NOTE = 2 + 12 * 5
 TREBLE_MIDDLE_NOTE_WHITE_KEY_IDX = NOTE_TO_WHITE_KEY_IDX[TREBLE_MIDDLE_NOTE]
 MAX_LEVEL_ABS = 14
 
+treble_clef_img = pygame.image.load('treble-clef.png')
+bass_clef_img = pygame.image.load('bass-clef.png')
+
 
 def render_note(disp: Surface | SurfaceType, rect: Rect, clef: Clef, note: int) -> None:
     assert note in NOTE_TO_WHITE_KEY_IDX, f'note={note_to_str(note)}'
@@ -41,3 +44,14 @@ def render_note(disp: Surface | SurfaceType, rect: Rect, clef: Clef, note: int) 
     note_rect = Rect(0, 0, level_dy * 3, level_dy * 2)
     note_rect.center = (middle_x, rect.top + (MAX_LEVEL_ABS + 1 - note_level) * level_dy)
     pygame.draw.ellipse(disp, color, note_rect)
+
+    clef_img = treble_clef_img if clef == Clef.TREBLE else bass_clef_img
+    clef_img_width, clef_img_height = clef_img.get_size()
+    clef_img_height_new = (20 if clef == Clef.TREBLE else 7) * level_dy
+    clef_img_width_new = clef_img_height_new * (clef_img_width / clef_img_height)
+    clef_img = pygame.transform.smoothscale(clef_img, (clef_img_width_new, clef_img_height_new))
+    clef_rect = Rect(0, 0, *clef_img.get_size())
+    clef_rect.right = rect.left - 10
+    middle_y = rect.top + (MAX_LEVEL_ABS + 1) * level_dy
+    clef_rect.top = middle_y - clef_rect.height / 2 - (0 if clef == Clef.TREBLE else rect.height * 0.02)
+    disp.blit(clef_img, clef_rect)
