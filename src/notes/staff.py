@@ -3,7 +3,7 @@ from enum import Enum
 import pygame
 from pygame import SurfaceType, Surface, Rect
 
-from common import NOTE_TO_WHITE_KEY_IDX
+from common import NOTE_TO_WHITE_KEY_IDX, str_to_note
 from common import note_to_str, BLACK
 
 
@@ -12,9 +12,9 @@ class Clef(Enum):
     TREBLE = 'TREBLE'
 
 
-BASS_MIDDLE_NOTE = 2 + 12 * 3 + 3
+BASS_MIDDLE_NOTE = str_to_note('3D')
 BASS_MIDDLE_NOE_WHITE_KEY_IDX = NOTE_TO_WHITE_KEY_IDX[BASS_MIDDLE_NOTE]
-TREBLE_MIDDLE_NOTE = 2 + 12 * 5
+TREBLE_MIDDLE_NOTE = str_to_note('4B')
 TREBLE_MIDDLE_NOTE_WHITE_KEY_IDX = NOTE_TO_WHITE_KEY_IDX[TREBLE_MIDDLE_NOTE]
 MAX_LEVEL_ABS = 14
 

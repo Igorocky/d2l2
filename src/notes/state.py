@@ -1,5 +1,6 @@
 from pygame import SurfaceType, Surface, Rect
 
+from common import str_to_note
 from keyboard import Keyboard
 from staff import Clef
 from staff import render_note
@@ -13,7 +14,7 @@ class NotesState:
         keyboard_rect = Rect((window_width - keyboard_width) / 2, (window_height - keyboard_height) / 2, keyboard_width,
                              keyboard_height)
         self.keyboard = Keyboard(keyboard_rect)
-        staff_width = 40
+        staff_width = 60
         staff_height = staff_width * 4
         self.staff_rect = Rect(0, 0, staff_width, staff_height)
         self.staff_rect.center = (window_width / 2, keyboard_rect.top / 2)
@@ -26,8 +27,8 @@ class NotesState:
 
     def render(self, disp: Surface | SurfaceType):
         self.keyboard.render(disp)
-        note = 44
-        render_note(disp, self.staff_rect, Clef.TREBLE, note)
+        # render_note(disp, self.staff_rect, Clef.TREBLE, str_to_note('4G'))
+        render_note(disp, self.staff_rect, Clef.BASS, str_to_note('4G'))
 
     def _mark_needs_rerender(self):
         self._needs_rerender = True

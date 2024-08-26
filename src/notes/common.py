@@ -26,11 +26,23 @@ NOTE_TO_WHITE_KEY_IDX: dict[int, int] = {note: idx for idx, note in enumerate(WH
 
 def note_to_str(note: int) -> str:
     if note == 0:
-        return 'A0'
+        return '0A'
     elif note == 1:
-        return 'A0#'
+        return '0A#'
     elif note == 2:
-        return 'B0'
+        return '0B'
     else:
         note = note - 3
         return f'{note // 12}{NOTE_NAMES[note % 12]}'
+
+
+def str_to_note(name: str) -> int:
+    assert 2 <= len(name) <= 3, f'{name=}'
+    octave = int(name[0])
+    rel_name = name[1:].upper()
+    assert rel_name in NOTE_NAMES
+    rel_idx = NOTE_NAMES.index(rel_name)
+    if octave == 0:
+        assert 0 <= rel_idx <= 2, f'{rel_idx=}'
+        return rel_idx
+    return 3 + (octave - 1) * 12 + rel_idx
