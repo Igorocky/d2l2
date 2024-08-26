@@ -21,6 +21,7 @@ def is_white_key(note: int) -> bool:
 
 WHITE_KEYS = [note for note in range(MAX_NOTE + 1) if is_white_key(note)]
 NUM_OF_WHITE_KEYS = len(WHITE_KEYS)
+BLACK_KEYS = [note for note in range(MAX_NOTE + 1) if not is_white_key(note)]
 NOTE_TO_WHITE_KEY_IDX: dict[int, int] = {note: idx for idx, note in enumerate(WHITE_KEYS)}
 
 

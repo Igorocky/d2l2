@@ -31,9 +31,8 @@ def handle_events(state: NotesState):
         if event.type == pg.QUIT:
             pygame.quit()
             sys.exit()
-        # elif event.type == pg.MOUSEBUTTONDOWN:
-        #     if state.rect.collidepoint(event.pos):
-        #         state.generate_next_rect()
+        elif event.type == pg.MOUSEBUTTONDOWN:
+            state.handle_click(event.pos)
 
 
 def render_state(state: NotesState):
