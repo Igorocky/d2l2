@@ -29,3 +29,15 @@ Start JupyterLab using:
 jupyter lab
 
 ---------------------------------------------------------------------------------------------------------------------
+
+Run a script as a *.bat file:
+
+cd C:/path/to/projects/python/d2l2
+
+call .venv-3.12.4/Scripts/activate.bat
+
+cd src/notes
+
+python notes.py arg1 arg2
+
+---------------------------------------------------------------------------------------------------------------------
