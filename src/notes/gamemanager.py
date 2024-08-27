@@ -34,6 +34,8 @@ class GameManager:
 
         font_obj = pygame.font.Font('freesansbold.ttf', 32)
         self._text_surface_obj = font_obj.render('Click to start.', True, WHITE, GRAY)
+        self._text_rect = self._text_surface_obj.get_rect()
+        self._text_rect.center = (int(window_width / 2), int(keyboard_rect.top / 2))
 
         self._state = State()
         self._mark_needs_rerender()
@@ -50,9 +52,8 @@ class GameManager:
                 self._keyboard.render(disp)
             render_note(disp, self._staff_rect, self._state.questions[0][0], self._state.questions[0][1])
         else:
-            text_rect = self._text_surface_obj.get_rect()
-            text_rect.center = (int(self._window_width / 2), int(self._window_height / 2))
-            disp.blit(self._text_surface_obj, text_rect)
+            disp.blit(self._text_surface_obj, self._text_rect)
+            self._keyboard.render(disp)
 
     def handle_click(self, pos: Tuple[int, int]) -> None:
         self._mark_needs_rerender()
