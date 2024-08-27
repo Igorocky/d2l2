@@ -26,7 +26,7 @@ class Keyboard:
                 black_key_rect.centerx = w_rect.right
                 self._black_key_rects.append(black_key_rect)
 
-    def render(self, disp: Surface | SurfaceType):
+    def render(self, disp: Surface | SurfaceType) -> None:
         for rect in self._white_key_rects:
             pygame.draw.rect(disp, YELLOWISH, rect)
             pygame.draw.line(disp, DARK_GRAY, (rect.left, rect.top), (rect.left, rect.bottom))

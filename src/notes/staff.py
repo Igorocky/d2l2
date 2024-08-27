@@ -42,7 +42,7 @@ def render_note(disp: Surface | SurfaceType, rect: Rect, clef: Clef, note: int) 
             elif -4 <= cur_level <= 4:
                 pygame.draw.line(disp, color, (rect.left, y), (rect.right, y))
     note_rect = Rect(0, 0, level_dy * 3, level_dy * 2)
-    note_rect.center = (middle_x, rect.top + (MAX_LEVEL_ABS + 1 - note_level) * level_dy)
+    note_rect.center = (int(middle_x), int(rect.top + (MAX_LEVEL_ABS + 1 - note_level) * level_dy))
     pygame.draw.ellipse(disp, color, note_rect)
 
     clef_img = treble_clef_img if clef == Clef.TREBLE else bass_clef_img
@@ -53,5 +53,5 @@ def render_note(disp: Surface | SurfaceType, rect: Rect, clef: Clef, note: int) 
     clef_rect = Rect(0, 0, *clef_img.get_size())
     clef_rect.right = rect.left - 10
     middle_y = rect.top + (MAX_LEVEL_ABS + 1) * level_dy
-    clef_rect.top = middle_y - clef_rect.height / 2 - (0 if clef == Clef.TREBLE else rect.height * 0.02)
+    clef_rect.top = int(middle_y - clef_rect.height / 2 - (0 if clef == Clef.TREBLE else rect.height * 0.02))
     disp.blit(clef_img, clef_rect)
