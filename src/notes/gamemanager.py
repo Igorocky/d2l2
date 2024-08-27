@@ -109,7 +109,8 @@ class GameManager:
         for note in range(str_to_note('2B'), str_to_note('6B') + 1):
             if is_white_key(note):
                 self._state.questions.append((Clef.TREBLE, note))
-        random.shuffle(self._state.questions)
+        for _ in range(10):
+            random.shuffle(self._state.questions)
 
     @staticmethod
     def _current_epoch_millis() -> int:
