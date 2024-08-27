@@ -34,7 +34,7 @@ def note_to_str(note: int) -> str:
         return '0B'
     else:
         note = note - 3
-        return f'{note // 12}{NOTE_NAMES[note % 12]}'
+        return f'{(note // 12)+1}{NOTE_NAMES[note % 12]}'
 
 
 def str_to_note(name: str) -> int:
