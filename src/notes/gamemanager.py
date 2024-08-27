@@ -21,6 +21,7 @@ class GameManager:
         self._window_width = window_width
         self._window_height = window_height
         self._database = Database(db_file_path)
+        self._database.backup()
         keyboard_width = window_width * 0.9
         keyboard_height = keyboard_width * (15 / 122.5)
         keyboard_rect = Rect((window_width - keyboard_width) / 2, (window_height - keyboard_height) / 2, keyboard_width,
