@@ -41,3 +41,14 @@ cd src/notes
 python notes.py arg1 arg2
 
 ---------------------------------------------------------------------------------------------------------------------
+
+notes stats:
+
+select
+    substr(ask_at_str, 0, 11),
+    count(1),
+    sum(case when ask_note <> ans_note then 1 else 0 end) err,
+    avg(ans_at - TRAIN_LOG.ask_at) avg_time
+from TRAIN_LOG
+group by substr(ask_at_str, 0, 11)
+order by substr(ask_at_str, 0, 11) desc;
