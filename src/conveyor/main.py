@@ -25,8 +25,8 @@ def main() -> None:
     conveyor = Conveyor(
         curr_time_sec=time.time(),
         conv_rect=conv_rect, min_gap_sec=3, max_gap_sec=5,
-        box_width=20, box_height=20,
-        velocity_x_px_sec=-10, velocity_y_px_sec=0,
+        box_radius=20,
+        velocity_x_px_sec=-300, velocity_y_px_sec=0,
         box_origin_x=conv_rect.right - 1, box_origin_y=(conv_rect.top + conv_rect.bottom) / 2
     )
     while True:
@@ -50,6 +50,7 @@ def render(conveyor: Conveyor) -> None:
     conveyor.render(DISP)
     pygame.display.update()
     fpsClock.tick(FPS)
+    # print(f'{fpsClock.get_fps()=}')
 
 
 if __name__ == '__main__':
