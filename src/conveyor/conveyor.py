@@ -58,7 +58,8 @@ class Conveyor:
         self._focus_point_x = focus_point_x
         self._focus_point_y = focus_point_y
         self._draw_focus_line = draw_focus_line
-        self._error_cnt = 0
+        self._missed_boxes_cnt = 0
+        self._misclick_cnt = 0
         self._font = font
 
     def _get_random_delay(self) -> float:
@@ -92,25 +93,16 @@ class Conveyor:
             elif box.is_focused:
                 box.is_focused = False
                 box.is_failed = True
-                self._error_cnt += 1
+                self._missed_boxes_cnt += 1
 
     def remove_focused_boxes(self) -> None:
         old_boxes = self._boxes
         self._boxes = [box for box in self._boxes if not box.is_focused]
         if len(old_boxes) == len(self._boxes):
-            self._error_cnt += 1
+            self._misclick_cnt += 1
 
     def render(self, disp: Surface | SurfaceType) -> None:
-        pygame.draw.lines(
-            disp, WHITE, closed=True,
-            points=[
-                (self._conv_rect.left, self._conv_rect.top),
-                (self._conv_rect.right, self._conv_rect.top),
-                (self._conv_rect.right, self._conv_rect.bottom),
-                (self._conv_rect.left, self._conv_rect.bottom),
-            ]
-        )
-        text_surf = self._font.render(str(self._error_cnt), False, RED)
+        text_surf = self._font.render(f'{self._missed_boxes_cnt} / {self._misclick_cnt}', False, RED)
         text_surf = pygame.transform.scale_by(text_surf, self._conv_rect.height / text_surf.get_height())
         text_rect = text_surf.get_rect()
         text_rect.right = self._conv_rect.left - 50
@@ -120,3 +112,12 @@ class Conveyor:
             color = PASTEL_RED if box.is_failed else PALE_GREEN if box.is_focused else BLACK
             pygame.draw.circle(disp, color, (box.curr_pos_x, box.curr_pos_y), self._box_radius)
         self._draw_focus_line(disp)
+        pygame.draw.lines(
+            disp, WHITE, closed=True,
+            points=[
+                (self._conv_rect.left, self._conv_rect.top),
+                (self._conv_rect.right, self._conv_rect.top),
+                (self._conv_rect.right, self._conv_rect.bottom),
+                (self._conv_rect.left, self._conv_rect.bottom),
+            ]
+        )

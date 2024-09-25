@@ -9,7 +9,7 @@ from common import GRAY, BLUE
 from conveyor import Conveyor
 
 WINDOW_WIDTH = 1800
-WINDOW_HEIGHT = 900
+WINDOW_HEIGHT = 400
 
 pygame.init()
 
@@ -32,7 +32,7 @@ def make_conveyor(conv_rect: Rect) -> Conveyor:
     box_origin_y = (conv_rect.top + conv_rect.bottom) / 2
     focus_point_x: float = conv_rect.left + 0.2 * conv_rect.width
     radius = (conv_rect.height * 0.8) / 2
-    seconds_till_focus_point = 4
+    seconds_till_focus_point = 10
     px_till_focus_point = conv_rect.right - focus_point_x
     min_gap_px = radius * 2 * 4
     max_gap_px = min_gap_px * 2
@@ -60,8 +60,10 @@ GameState = dict[int, Conveyor]
 def main() -> None:
     game_state: GameState = {}
 
-    upper_conv_rect: Rect = Rect(0, 0, 800, 50)
+    upper_conv_rect: Rect = Rect(0, 0, WINDOW_WIDTH * 0.8, 50)
     upper_conv_rect.center = (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2))
+    upper_conv_rect.top = int((WINDOW_HEIGHT - 3 * upper_conv_rect.height) / 2)
+    upper_conv_rect.left += int(upper_conv_rect.height * 1.5)
     game_state[pygame.K_j] = make_conveyor(upper_conv_rect)
 
     lower_conv_rect = upper_conv_rect.copy()
