@@ -26,17 +26,24 @@ pygame.display.set_caption('Conveyor')
 def draw_focus_line(disp: Surface | SurfaceType, conv_rect: Rect, focus_point_x: float) -> None:
     pygame.draw.line(disp, BLUE, (focus_point_x, conv_rect.top), (focus_point_x, conv_rect.bottom), width=3)
 
+
 def make_conveyor(conv_rect: Rect) -> Conveyor:
     box_origin_x = conv_rect.right - 1
     box_origin_y = (conv_rect.top + conv_rect.bottom) / 2
     focus_point_x: float = conv_rect.left + 0.2 * conv_rect.width
+    radius = (conv_rect.height * 0.8) / 2
+    seconds_till_focus_point = 4
+    px_till_focus_point = conv_rect.right - focus_point_x
+    min_gap_px = radius * 2 * 4
+    max_gap_px = min_gap_px * 2
+    abs_velocity_x_px_sec = px_till_focus_point / seconds_till_focus_point
     return Conveyor(
         curr_time_sec=time.time(),
         conv_rect=conv_rect,
-        min_delay_sec=0.2,
-        max_delay_sec=1,
-        box_radius=20,
-        velocity_x_px_sec=-200,
+        min_delay_sec=min_gap_px / abs_velocity_x_px_sec,
+        max_delay_sec=max_gap_px / abs_velocity_x_px_sec,
+        box_radius=int(radius),
+        velocity_x_px_sec=-abs_velocity_x_px_sec,
         velocity_y_px_sec=0,
         box_origin_x=box_origin_x,
         box_origin_y=box_origin_y,
@@ -46,7 +53,9 @@ def make_conveyor(conv_rect: Rect) -> Conveyor:
         font=font,
     )
 
-GameState = dict[int,Conveyor]
+
+GameState = dict[int, Conveyor]
+
 
 def main() -> None:
     game_state: GameState = {}
@@ -54,6 +63,11 @@ def main() -> None:
     upper_conv_rect: Rect = Rect(0, 0, 800, 50)
     upper_conv_rect.center = (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2))
     game_state[pygame.K_j] = make_conveyor(upper_conv_rect)
+
+    lower_conv_rect = upper_conv_rect.copy()
+    lower_conv_rect.top = upper_conv_rect.bottom + upper_conv_rect.height
+    game_state[pygame.K_f] = make_conveyor(lower_conv_rect)
+
     while True:
         curr_time_sec = time.time()
         for conv in game_state.values():
