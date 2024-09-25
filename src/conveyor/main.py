@@ -24,10 +24,14 @@ def main() -> None:
     conv_rect.center = (int(WINDOW_WIDTH / 2), int(WINDOW_HEIGHT / 2))
     conveyor = Conveyor(
         curr_time_sec=time.time(),
-        conv_rect=conv_rect, min_gap_sec=3, max_gap_sec=5,
+        conv_rect=conv_rect,
+        min_delay_sec=0.2,
+        max_delay_sec=1,
         box_radius=20,
-        velocity_x_px_sec=-300, velocity_y_px_sec=0,
-        box_origin_x=conv_rect.right - 1, box_origin_y=(conv_rect.top + conv_rect.bottom) / 2
+        velocity_x_px_sec=-300,
+        velocity_y_px_sec=0,
+        box_origin_x=conv_rect.right - 1,
+        box_origin_y=(conv_rect.top + conv_rect.bottom) / 2
     )
     while True:
         curr_time_sec = time.time()

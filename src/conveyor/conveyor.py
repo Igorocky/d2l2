@@ -1,3 +1,5 @@
+import random
+
 import pygame.draw
 from pygame import Rect, Surface, SurfaceType
 
@@ -27,20 +29,24 @@ class Box:
 class Conveyor:
     def __init__(self,
                  curr_time_sec: float,
-                 conv_rect: Rect, min_gap_sec: int, max_gap_sec: int,
+                 conv_rect: Rect, min_delay_sec: float, max_delay_sec: float,
                  box_radius: int,
                  velocity_x_px_sec: float, velocity_y_px_sec: float,
                  box_origin_x: float, box_origin_y: float) -> None:
+        self._created_at_sec = curr_time_sec
         self._conv_rect = conv_rect
-        self._min_gap_millis = min_gap_sec
-        self._max_gap_millis = max_gap_sec
+        self._min_delay_sec = min_delay_sec
+        self._max_delay_sec = max_delay_sec
         self._box_radius = box_radius
         self._velocity_x_px_sec = velocity_x_px_sec
         self._velocity_y_px_sec = velocity_y_px_sec
         self._box_origin_x = box_origin_x
         self._box_origin_y = box_origin_y
+        self._cur_delay_sec = self._get_random_delay()
+        self._boxes: list[Box] = []
 
-        self._boxes = [self._create_new_box(curr_time_sec)]
+    def _get_random_delay(self) -> float:
+        return random.uniform(self._min_delay_sec, self._max_delay_sec)
 
     def _create_new_box(self, curr_time_sec: float) -> Box:
         return Box(
@@ -48,12 +54,20 @@ class Conveyor:
             velocity_x_px_sec=self._velocity_x_px_sec, velocity_y_px_sec=self._velocity_y_px_sec
         )
 
+    def _add_new_box_if_needed(self, curr_time_sec: float) -> None:
+        last_time_sec = self._boxes[-1].created_at_sec if len(self._boxes) > 0 else self._created_at_sec
+        if self._cur_delay_sec < curr_time_sec - last_time_sec:
+            self._boxes.append(self._create_new_box(curr_time_sec))
+            self._cur_delay_sec = self._get_random_delay()
+
     def update(self, curr_time_sec: float) -> None:
         # move all boxes
         for box in self._boxes:
             box.update_coords(curr_time_sec)
-        # remove missed boxes
+        # remove old boxes
         self._boxes = [box for box in self._boxes if self._conv_rect.collidepoint((box.curr_pos_x, box.curr_pos_y))]
+        #add new boxes
+        self._add_new_box_if_needed(curr_time_sec)
 
     def render(self, disp: Surface | SurfaceType) -> None:
         pygame.draw.lines(
