@@ -44,17 +44,28 @@ def select_max(grps:list[list[list[int]]]) -> list[list[int]]:
     return max_grp
 
 def main() -> None:
+    max_dist = 0.0
+    max_grps:list[list[list[int]]] = []
     grp = [list(range(1,7)) for i in range(8)]
     print('------------------------------------')
     print(f'epoch=0')
     print(f'dist={dist_all(grp)}')
     print(f'{grp=}')
-    for epoch in range(1,1000+1):
+    for epoch in range(1,100_000+1):
         grp = select_max(make_random_versions(grp, 100))
+        dist = dist_all(grp)
+        if dist > max_dist:
+            max_dist = dist
+            max_grps = [grp]
+        elif dist == max_dist:
+            max_grps.append(grp)
         print('------------------------------------')
         print(f'{epoch=}')
         print(f'dist={dist_all(grp)}')
         print(f'{grp=}')
+    print('====================================')
+    print(f'{max_dist=}')
+    print(f'{max_grps=}')
 
 
 if __name__ == '__main__':
