@@ -1,3 +1,5 @@
+import time
+
 WHITE = (255, 255, 255)
 YELLOW = (234, 221, 202)
 YELLOWISH = (255, 250, 226)
@@ -9,6 +11,8 @@ MAX_NOTE = 87
 WHITE_KEYS_IN_OCTAVE = {0, 2, 4, 5, 7, 9, 11}
 NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
+def current_epoch_millis() -> int:
+    return int(time.time() * 1000)
 
 def is_white_key(note: int) -> bool:
     if note == 0 or note == 2:

@@ -1,17 +1,15 @@
 import datetime
 import random
-import time
 from typing import Tuple
 
 import pygame
 from pygame import SurfaceType, Surface, Rect
 
-from common import WHITE, GRAY, note_to_str
+from common import WHITE, GRAY, note_to_str, current_epoch_millis
 from database import Database
-from gamestate import State
+from gamestate import make_state
 from keyboard import Keyboard
 from staff import Clef
-from staff import get_all_notes
 from staff import render_note
 
 
@@ -36,7 +34,7 @@ class GameManager:
         self._text_rect = self._text_surface_obj.get_rect()
         self._text_rect.center = (int(window_width / 2), int(keyboard_rect.top / 2))
 
-        self._state = State()
+        self._state = make_state(clef=Clef.BASS, pass_note_avg_millis=10_000)
         self._mark_needs_rerender()
 
     def mark_rendered(self) -> None:
@@ -49,7 +47,9 @@ class GameManager:
         if self._state.started:
             if self._state.show_keyboard:
                 self._keyboard.render(disp)
-            render_note(disp, self._staff_rect, self._state.questions[0][0], self._state.questions[0][1])
+            render_note(
+                disp, self._staff_rect, self._state.remaining_questions[0][0], self._state.remaining_questions[0][1]
+            )
         else:
             disp.blit(self._text_surface_obj, self._text_rect)
             self._keyboard.render(disp)
@@ -59,7 +59,7 @@ class GameManager:
         if not self._state.started:
             self._state.started = True
             self._generate_questions()
-            self._state.asked_at = self._current_epoch_millis()
+            self._state.asked_at = current_epoch_millis()
         else:
             if not self._state.show_keyboard:
                 self._state.show_keyboard = True
@@ -70,13 +70,20 @@ class GameManager:
                         self._state.first_ans = clicked_note
                         self._log_ans()
 
-                    if self._state.questions[0][1] == clicked_note:
+                    if self._state.remaining_questions[0][1] == clicked_note:
                         self._state.show_keyboard = False
-                        if len(self._state.questions) == 1:
+                        self._state.notes_answered_in_cur_cycle += 1
+                        self._state.note_avg_millis_in_cur_cycle = (
+                            int(
+                                (current_epoch_millis() - self._state.cycle_started_at)
+                                / self._state.notes_answered_in_cur_cycle
+                            )
+                        )
+                        if len(self._state.remaining_questions) == 1:
                             self._generate_questions()
                         else:
-                            self._state.questions.pop(0)
-                        self._state.asked_at = self._current_epoch_millis()
+                            self._state.remaining_questions.pop(0)
+                        self._state.asked_at = current_epoch_millis()
                         self._state.first_ans = None
 
     def _log_ans(self) -> None:
@@ -88,10 +95,10 @@ class GameManager:
                 'ask_at': self._state.asked_at,
                 'ask_at_str': datetime.datetime.fromtimestamp(self._state.asked_at / 1000,
                                                               datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S%z'),
-                'ask_clef': 'B' if self._state.questions[0][0] == Clef.BASS else 'T',
-                'ask_note': self._state.questions[0][1],
-                'ask_note_name': note_to_str(self._state.questions[0][1]),
-                'ans_at': self._current_epoch_millis(),
+                'ask_clef': 'B' if self._state.remaining_questions[0][0] == Clef.BASS else 'T',
+                'ask_note': self._state.remaining_questions[0][1],
+                'ask_note_name': note_to_str(self._state.remaining_questions[0][1]),
+                'ans_at': current_epoch_millis(),
                 'ans_note': self._state.first_ans,
                 'ans_note_name': note_to_str(self._state.first_ans)
             }
@@ -101,10 +108,20 @@ class GameManager:
         self._needs_rerender = True
 
     def _generate_questions(self) -> None:
-        self._state.questions = get_all_notes()
+        if self._state.note_avg_millis_in_cur_cycle <= self._state.pass_note_avg_millis:
+            self._state.curr_grp += 1 if self._state.curr_grp < len(self._state.all_question_groups) - 1 else 0
+        self._state.remaining_questions = self._state.all_question_groups[self._state.curr_grp].copy()
         for _ in range(10):
-            random.shuffle(self._state.questions)
+            random.shuffle(self._state.remaining_questions)
+        self._state.cycle_started_at = current_epoch_millis()
+        self._state.notes_answered_in_cur_cycle = 0
+        self._state.note_avg_millis_in_cur_cycle = 1000_000_000
 
-    @staticmethod
-    def _current_epoch_millis() -> int:
-        return int(time.time() * 1000)
+    def _print_state(self) -> None:
+        state = self._state
+        remaining_questions = [note_to_str(n) for _, n in state.remaining_questions]
+        print(f'{state.curr_grp=}')
+        print(f'state.{remaining_questions=}')
+        print(f'{state.cycle_started_at=}')
+        print(f'{state.notes_answered_in_cur_cycle=}')
+        print(f'{state.note_avg_millis_in_cur_cycle=}')
