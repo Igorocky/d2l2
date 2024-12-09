@@ -67,3 +67,17 @@ def group_by_octaves(notes: list[int]) -> list[list[int]]:
     for grp in res:
         grp.sort()
     return res
+
+
+def arrange_groups_for_learning(num_of_groups: int) -> list[list[int]]:
+    res = [list(range(num_of_groups))]
+    i = 0
+    while i < len(res):
+        cur = res[i]
+        if len(cur) > 1:
+            mid = len(cur) // 2 + len(cur)%2
+            res.insert(i+1,cur[mid:len(cur)])
+            res.insert(i+2,cur[:mid])
+        i += 1
+    res.reverse()
+    return res

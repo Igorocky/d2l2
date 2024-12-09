@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from common import group_by_octaves, note_to_str
+from common import group_by_octaves, note_to_str, arrange_groups_for_learning
 from staff import get_all_notes, Clef
 
 
@@ -27,4 +27,18 @@ class CommonTest(TestCase):
                 ['6C', '6D', '6E', '6F', '6G', '6A', '6B']
             ],
             treble_grps_str
+        )
+
+    def test_arrange_groups_for_learning(self) -> None:
+        self.assertEqual(
+            [[0], [1], [0, 1], [2], [3], [2, 3], [0, 1, 2, 3]],
+            arrange_groups_for_learning(4)
+        )
+        self.assertEqual(
+            [[0], [1], [0, 1], [2], [0, 1, 2], [3], [4], [3, 4], [0, 1, 2, 3, 4]],
+            arrange_groups_for_learning(5)
+        )
+        self.assertEqual(
+            [[0], [1], [0, 1], [2], [0, 1, 2], [3], [4], [3, 4], [5], [3, 4, 5], [0, 1, 2, 3, 4, 5]],
+            arrange_groups_for_learning(6)
         )
