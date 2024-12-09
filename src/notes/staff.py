@@ -1,10 +1,12 @@
 from enum import Enum
+from typing import Tuple
 
 import pygame
 from pygame import SurfaceType, Surface, Rect
 
 from common import NOTE_TO_WHITE_KEY_IDX, str_to_note
 from common import note_to_str, BLACK
+from common import is_white_key
 
 
 class Clef(Enum):
@@ -55,3 +57,14 @@ def render_note(disp: Surface | SurfaceType, rect: Rect, clef: Clef, note: int) 
     middle_y = rect.top + (MAX_LEVEL_ABS + 1) * level_dy
     clef_rect.top = int(middle_y - clef_rect.height / 2 - (0 if clef == Clef.TREBLE else rect.height * 0.02))
     disp.blit(clef_img, clef_rect)
+
+
+def get_all_notes() -> list[Tuple[Clef,int]]:
+    res = []
+    for note in range(str_to_note('1D'), str_to_note('5D') + 1):
+        if is_white_key(note):
+            res.append((Clef.BASS, note))
+    for note in range(str_to_note('2B'), str_to_note('6B') + 1):
+        if is_white_key(note):
+            res.append((Clef.TREBLE, note))
+    return res

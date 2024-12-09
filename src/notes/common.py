@@ -34,7 +34,7 @@ def note_to_str(note: int) -> str:
         return '0B'
     else:
         note = note - 3
-        return f'{(note // 12)+1}{NOTE_NAMES[note % 12]}'
+        return f'{(note // 12) + 1}{NOTE_NAMES[note % 12]}'
 
 
 def str_to_note(name: str) -> int:
@@ -47,3 +47,23 @@ def str_to_note(name: str) -> int:
         assert 0 <= rel_idx <= 2, f'{rel_idx=}'
         return rel_idx
     return 3 + (octave - 1) * 12 + rel_idx
+
+
+def group_by_octaves(notes: list[int]) -> list[list[int]]:
+    octaves: dict[str, list[int]] = {}
+    for n in notes:
+        oct = note_to_str(n)[0]
+        if oct not in octaves:
+            octaves[oct] = []
+        octaves[oct].append(n)
+    res = list(octaves.values())
+    res.sort(key=lambda o: o[0])
+    if len(res[0]) <= 3:
+        res[1].extend(res[0])
+        del res[0]
+    if len(res[-1]) <= 3:
+        res[-2].extend(res[-1])
+        del res[-1]
+    for grp in res:
+        grp.sort()
+    return res

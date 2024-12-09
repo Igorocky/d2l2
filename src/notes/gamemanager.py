@@ -7,12 +7,11 @@ import pygame
 from pygame import SurfaceType, Surface, Rect
 
 from common import WHITE, GRAY, note_to_str
-from common import is_white_key
-from common import str_to_note
 from database import Database
 from gamestate import State
 from keyboard import Keyboard
 from staff import Clef
+from staff import get_all_notes
 from staff import render_note
 
 
@@ -102,13 +101,7 @@ class GameManager:
         self._needs_rerender = True
 
     def _generate_questions(self) -> None:
-        self._state.questions = []
-        for note in range(str_to_note('1D'), str_to_note('5D') + 1):
-            if is_white_key(note):
-                self._state.questions.append((Clef.BASS, note))
-        for note in range(str_to_note('2B'), str_to_note('6B') + 1):
-            if is_white_key(note):
-                self._state.questions.append((Clef.TREBLE, note))
+        self._state.questions = get_all_notes()
         for _ in range(10):
             random.shuffle(self._state.questions)
 
