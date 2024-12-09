@@ -33,6 +33,7 @@ class GameManager:
         self._text_surface_obj = font_obj.render('Click to start.', True, WHITE, GRAY)
         self._text_rect = self._text_surface_obj.get_rect()
         self._text_rect.center = (int(window_width / 2), int(keyboard_rect.top / 2))
+        self._stats_font = pygame.font.SysFont('monospace', 30)
 
         self._state = make_state(clef=Clef.BASS, pass_note_avg_millis=10_000)
         self._mark_needs_rerender()
@@ -50,9 +51,24 @@ class GameManager:
             render_note(
                 disp, self._staff_rect, self._state.remaining_questions[0][0], self._state.remaining_questions[0][1]
             )
+            self._render_stats(disp)
         else:
             disp.blit(self._text_surface_obj, self._text_rect)
             self._keyboard.render(disp)
+
+    def _render_stats(self, disp: Surface | SurfaceType) -> None:
+        curr_grp_num = self._state.curr_grp + 1
+        max_grp_num = len(self._state.all_question_groups)
+        curr_note_num = self._state.notes_answered_in_cur_cycle + 1
+        max_note_num = len(self._state.all_question_groups[self._state.curr_grp])
+        cur_avg_sec = round(self._state.note_avg_millis_in_cur_cycle / 1000, 2)
+        cur_avg_sec_str = f'{cur_avg_sec} sec' if curr_note_num > 1 else ''
+        grp_stat = f'{curr_grp_num}/{max_grp_num}'
+        cycle_stat = f'{curr_note_num}/{max_note_num}   {cur_avg_sec_str}'
+        text_surface_obj = self._stats_font.render(f'{grp_stat}   {cycle_stat}', True, WHITE, GRAY)
+        text_rect = text_surface_obj.get_rect()
+        text_rect.bottomleft = (10, self._window_height - 10)
+        disp.blit(text_surface_obj, text_rect)
 
     def handle_click(self, pos: Tuple[int, int]) -> None:
         self._mark_needs_rerender()
