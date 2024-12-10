@@ -25,7 +25,7 @@ def main() -> None:
     # game_manager = GameManager(window_width=WINDOW_WIDTH, window_height=WINDOW_HEIGHT, db_file_path=sys.argv[1])
     game_manager = GameManager(
         window_width=DISP.get_width(), window_height=DISP.get_height(),
-        clefs=[Clef.BASS], pass_note_avg_millis=2_000,
+        clefs=[Clef.BASS,Clef.TREBLE], pass_note_avg_millis=1_900,
         db_file_path=sys.argv[1])
     while True:
         handle_events(game_manager)
