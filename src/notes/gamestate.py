@@ -17,6 +17,7 @@ class State:
     cycle_started_at:int = 0
     notes_answered_in_cur_cycle:int = 0
     note_avg_millis_in_cur_cycle:int = 1000_000_000
+    mistakes_in_cur_cycle:int = 0
     pass_note_avg_millis:int = 0
     asked_at: int = 0
     first_ans: int | None = None

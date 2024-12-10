@@ -45,62 +45,70 @@ class GameManager:
         return self._needs_rerender
 
     def render(self, disp: Surface | SurfaceType) -> None:
-        if self._state.started:
-            if self._state.show_keyboard:
+        state = self._state
+        if state.started:
+            if state.show_keyboard:
                 self._keyboard.render(disp)
-            render_note(
-                disp, self._staff_rect, self._state.remaining_questions[0][0], self._state.remaining_questions[0][1]
-            )
-            self._render_stats(disp)
+            render_note(disp, self._staff_rect, state.remaining_questions[0][0], state.remaining_questions[0][1])
         else:
             disp.blit(self._text_surface_obj, self._text_rect)
             self._keyboard.render(disp)
+        self._render_stats(disp)
 
     def _render_stats(self, disp: Surface | SurfaceType) -> None:
-        curr_grp_num = self._state.curr_grp + 1
-        max_grp_num = len(self._state.all_question_groups)
-        curr_note_num = self._state.notes_answered_in_cur_cycle + 1
-        max_note_num = len(self._state.all_question_groups[self._state.curr_grp])
-        cur_avg_sec = round(self._state.note_avg_millis_in_cur_cycle / 1000, 2)
+        state = self._state
+        curr_grp_num = state.curr_grp + 1
+        max_grp_num = len(state.all_question_groups)
+        curr_note_num = state.notes_answered_in_cur_cycle
+        max_note_num = len(state.all_question_groups[state.curr_grp])
+        cur_avg_sec = round(state.note_avg_millis_in_cur_cycle / 1000, 2)
         cur_avg_sec_str = f'{cur_avg_sec} sec' if curr_note_num > 1 else ''
-        grp_stat = f'{curr_grp_num}/{max_grp_num}'
-        cycle_stat = f'{curr_note_num}/{max_note_num}   {cur_avg_sec_str}'
-        text_surface_obj = self._stats_font.render(f'{grp_stat}   {cycle_stat}', True, WHITE, GRAY)
+        pass_avg_sec = round(state.pass_note_avg_millis / 1000, 2)
+        target_avg_sec_str = f'pass avg: {pass_avg_sec} sec'
+        grp_stat = f'level: {curr_grp_num}/{max_grp_num}'
+        cycle_stat = f'note: {curr_note_num}/{max_note_num}   {cur_avg_sec_str}'
+        mistakes_stat = f'mistakes: {state.mistakes_in_cur_cycle}'
+        text_surface_obj = self._stats_font.render(
+            f'{grp_stat}   {cycle_stat}   {mistakes_stat}    {target_avg_sec_str}',
+            True, WHITE, GRAY
+        )
         text_rect = text_surface_obj.get_rect()
         text_rect.bottomleft = (10, self._window_height - 10)
         disp.blit(text_surface_obj, text_rect)
 
     def handle_click(self, pos: Tuple[int, int]) -> None:
         self._mark_needs_rerender()
-        if not self._state.started:
-            self._state.started = True
+        state = self._state
+        if not state.started:
+            state.started = True
             self._generate_questions()
-            self._state.asked_at = current_epoch_millis()
+            state.asked_at = current_epoch_millis()
         else:
-            if not self._state.show_keyboard:
-                self._state.show_keyboard = True
+            if not state.show_keyboard:
+                state.show_keyboard = True
             else:
                 clicked_note = self._keyboard.get_clicked_note(pos)
                 if clicked_note is not None:
-                    if self._state.first_ans is None:
-                        self._state.first_ans = clicked_note
+                    if state.first_ans is None:
+                        state.first_ans = clicked_note
                         self._log_ans()
 
-                    if self._state.remaining_questions[0][1] == clicked_note:
-                        self._state.show_keyboard = False
-                        self._state.notes_answered_in_cur_cycle += 1
-                        self._state.note_avg_millis_in_cur_cycle = (
+                    if state.remaining_questions[0][1] == clicked_note:
+                        state.show_keyboard = False
+                        state.notes_answered_in_cur_cycle += 1
+                        state.note_avg_millis_in_cur_cycle = (
                             int(
-                                (current_epoch_millis() - self._state.cycle_started_at)
-                                / self._state.notes_answered_in_cur_cycle
+                                (current_epoch_millis() - state.cycle_started_at)
+                                / state.notes_answered_in_cur_cycle
                             )
                         )
-                        if len(self._state.remaining_questions) == 1:
-                            self._generate_questions()
-                        else:
-                            self._state.remaining_questions.pop(0)
-                        self._state.asked_at = current_epoch_millis()
-                        self._state.first_ans = None
+                        state.remaining_questions.pop(0)
+                        if len(state.remaining_questions) == 0:
+                            state.started = False
+                        state.asked_at = current_epoch_millis()
+                        state.first_ans = None
+                    else:
+                        state.mistakes_in_cur_cycle += 1
 
     def _log_ans(self) -> None:
         assert self._state.first_ans is not None, f'{self._state.first_ans=}'
@@ -124,14 +132,16 @@ class GameManager:
         self._needs_rerender = True
 
     def _generate_questions(self) -> None:
-        if self._state.note_avg_millis_in_cur_cycle <= self._state.pass_note_avg_millis:
-            self._state.curr_grp += 1 if self._state.curr_grp < len(self._state.all_question_groups) - 1 else 0
-        self._state.remaining_questions = self._state.all_question_groups[self._state.curr_grp].copy()
+        state = self._state
+        if state.note_avg_millis_in_cur_cycle <= state.pass_note_avg_millis and state.mistakes_in_cur_cycle == 0:
+            state.curr_grp += 1 if state.curr_grp < len(state.all_question_groups) - 1 else 0
+        state.remaining_questions = state.all_question_groups[state.curr_grp].copy()
         for _ in range(10):
-            random.shuffle(self._state.remaining_questions)
-        self._state.cycle_started_at = current_epoch_millis()
-        self._state.notes_answered_in_cur_cycle = 0
-        self._state.note_avg_millis_in_cur_cycle = 1000_000_000
+            random.shuffle(state.remaining_questions)
+        state.cycle_started_at = current_epoch_millis()
+        state.notes_answered_in_cur_cycle = 0
+        state.note_avg_millis_in_cur_cycle = 1000_000_000
+        state.mistakes_in_cur_cycle = 0
 
     def _print_state(self) -> None:
         state = self._state
