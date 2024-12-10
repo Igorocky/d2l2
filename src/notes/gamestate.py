@@ -22,16 +22,19 @@ class State:
     asked_at: int = 0
     first_ans: int | None = None
 
-def make_state(clef:Clef, pass_note_avg_millis:int) -> State:
-    all_notes = [n for c,n in get_all_notes() if c == clef]
-    octaves = group_by_octaves(all_notes)
+def make_state(clefs:list[Clef], pass_note_avg_millis:int) -> State:
+    octaves:list[list[Tuple[Clef,int]]] = []
+    for clef in clefs:
+        all_notes = [n for c,n in get_all_notes() if c == clef]
+        octaves_for_clef:list[list[int]] = group_by_octaves(all_notes)
+        octaves.extend([[(clef,n) for n in octave] for octave in octaves_for_clef])
     random.shuffle(octaves)
     octave_idxs = arrange_groups_for_learning(len(octaves))
     all_question_groups: list[list[Tuple[Clef, int]]] = []
     for question_grp in octave_idxs:
         all_question_groups.append([])
         for octave_idx in question_grp:
-            all_question_groups[-1].extend([(clef,n) for n in octaves[octave_idx]])
+            all_question_groups[-1].extend(octaves[octave_idx])
     return State(
         all_question_groups = all_question_groups,
         pass_note_avg_millis = pass_note_avg_millis

@@ -14,7 +14,10 @@ from staff import render_note
 
 
 class GameManager:
-    def __init__(self, window_width: int, window_height: int, db_file_path: str):
+    def __init__(self,
+                 window_width: int, window_height: int,
+                 clefs:list[Clef], pass_note_avg_millis:int,
+                 db_file_path: str):
         self._window_width = window_width
         self._window_height = window_height
         self._database = Database(db_file_path)
@@ -35,7 +38,7 @@ class GameManager:
         self._text_rect.center = (int(window_width / 2), int(keyboard_rect.top / 2))
         self._stats_font = pygame.font.SysFont('monospace', 30)
 
-        self._state = make_state(clef=Clef.BASS, pass_note_avg_millis=10_000)
+        self._state = make_state(clefs=clefs, pass_note_avg_millis=pass_note_avg_millis)
         self._mark_needs_rerender()
 
     def mark_rendered(self) -> None:
@@ -104,7 +107,10 @@ class GameManager:
                         )
                         state.remaining_questions.pop(0)
                         if len(state.remaining_questions) == 0:
-                            state.started = False
+                            if self._is_level_complete():
+                                state.started = False
+                            else:
+                                self._generate_questions()
                         state.asked_at = current_epoch_millis()
                         state.first_ans = None
                     else:
@@ -131,9 +137,13 @@ class GameManager:
     def _mark_needs_rerender(self) -> None:
         self._needs_rerender = True
 
+    def _is_level_complete(self) -> bool:
+        state = self._state
+        return state.note_avg_millis_in_cur_cycle <= state.pass_note_avg_millis and state.mistakes_in_cur_cycle == 0
+
     def _generate_questions(self) -> None:
         state = self._state
-        if state.note_avg_millis_in_cur_cycle <= state.pass_note_avg_millis and state.mistakes_in_cur_cycle == 0:
+        if self._is_level_complete():
             state.curr_grp += 1 if state.curr_grp < len(state.all_question_groups) - 1 else 0
         state.remaining_questions = state.all_question_groups[state.curr_grp].copy()
         for _ in range(10):

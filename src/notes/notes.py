@@ -6,6 +6,7 @@ from pygame import Surface, SurfaceType
 
 from common import GRAY
 from gamemanager import GameManager
+from staff import Clef
 
 WINDOW_WIDTH = 1800
 WINDOW_HEIGHT = 900
@@ -22,7 +23,10 @@ pygame.display.set_caption('Notes')
 
 def main() -> None:
     # game_manager = GameManager(window_width=WINDOW_WIDTH, window_height=WINDOW_HEIGHT, db_file_path=sys.argv[1])
-    game_manager = GameManager(window_width=DISP.get_width(), window_height=DISP.get_height(), db_file_path=sys.argv[1])
+    game_manager = GameManager(
+        window_width=DISP.get_width(), window_height=DISP.get_height(),
+        clefs=[Clef.BASS], pass_note_avg_millis=2_000,
+        db_file_path=sys.argv[1])
     while True:
         handle_events(game_manager)
         render_state(game_manager)
