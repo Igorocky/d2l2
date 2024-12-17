@@ -16,7 +16,8 @@ class State:
     remaining_questions: list[Tuple[Clef, int]] = field(default_factory=lambda: [])
     cycle_started_at:int = 0
     notes_answered_in_cur_cycle:int = 0
-    note_avg_millis_in_cur_cycle:int = 1000_000_000
+    note_avg_millis_in_cur_cycle:int = -1
+    note_avg_millis_best:int = -1
     mistakes_in_cur_cycle:int = 0
     pass_note_avg_millis:int = 0
     asked_at: int = 0

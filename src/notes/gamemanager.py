@@ -16,7 +16,7 @@ from staff import render_note
 class GameManager:
     def __init__(self,
                  window_width: int, window_height: int,
-                 clefs:list[Clef], pass_note_avg_millis:int,
+                 clefs: list[Clef], pass_note_avg_millis: int,
                  db_file_path: str):
         self._window_width = window_width
         self._window_height = window_height
@@ -65,14 +65,16 @@ class GameManager:
         curr_note_num = state.notes_answered_in_cur_cycle
         max_note_num = len(state.all_question_groups[state.curr_grp])
         cur_avg_sec = round(state.note_avg_millis_in_cur_cycle / 1000, 2)
-        cur_avg_sec_str = f'{cur_avg_sec} sec' if curr_note_num > 1 else ''
+        cur_avg_sec_str = f'   {cur_avg_sec} sec' if curr_note_num > 1 else ''
+        best_avg_sec = round(state.note_avg_millis_best / 1000, 2)
+        best_avg_sec_str = f'   (best {best_avg_sec} sec)' if best_avg_sec > 0 else ''
         pass_avg_sec = round(state.pass_note_avg_millis / 1000, 2)
-        target_avg_sec_str = f'pass avg: {pass_avg_sec} sec'
+        target_avg_sec_str = f'   pass avg: {pass_avg_sec} sec'
         grp_stat = f'level: {curr_grp_num}/{max_grp_num}'
-        cycle_stat = f'note: {curr_note_num}/{max_note_num}   {cur_avg_sec_str}'
-        mistakes_stat = f'mistakes: {state.mistakes_in_cur_cycle}'
+        mistakes_stat = f'   mistakes: {state.mistakes_in_cur_cycle}'
+        cycle_stat = f'   note: {curr_note_num}/{max_note_num}{cur_avg_sec_str}{best_avg_sec_str}'
         text_surface_obj = self._stats_font.render(
-            f'{grp_stat}   {cycle_stat}   {mistakes_stat}    {target_avg_sec_str}',
+            f'{grp_stat}{mistakes_stat}{cycle_stat}{target_avg_sec_str}',
             True, WHITE, GRAY
         )
         text_rect = text_surface_obj.get_rect()
@@ -139,18 +141,23 @@ class GameManager:
 
     def _is_level_complete(self) -> bool:
         state = self._state
-        return state.note_avg_millis_in_cur_cycle <= state.pass_note_avg_millis and state.mistakes_in_cur_cycle == 0
+        return 0 < state.note_avg_millis_in_cur_cycle <= state.pass_note_avg_millis and state.mistakes_in_cur_cycle == 0
 
     def _generate_questions(self) -> None:
         state = self._state
         if self._is_level_complete():
             state.curr_grp += 1 if state.curr_grp < len(state.all_question_groups) - 1 else 0
+            state.note_avg_millis_best = -1
+        else:
+            state.note_avg_millis_best = state.note_avg_millis_in_cur_cycle \
+                if state.note_avg_millis_best < 0 \
+                else min(state.note_avg_millis_best, state.note_avg_millis_in_cur_cycle)
         state.remaining_questions = state.all_question_groups[state.curr_grp].copy()
         for _ in range(10):
             random.shuffle(state.remaining_questions)
         state.cycle_started_at = current_epoch_millis()
         state.notes_answered_in_cur_cycle = 0
-        state.note_avg_millis_in_cur_cycle = 1000_000_000
+        state.note_avg_millis_in_cur_cycle = -1
         state.mistakes_in_cur_cycle = 0
 
     def _print_state(self) -> None:
