@@ -6,13 +6,16 @@ YELLOWISH = (255, 250, 226)
 BLACK = (0, 0, 0)
 GRAY = (150, 150, 150)
 DARK_GRAY = (70, 70, 70)
+ERROR_COLOR = (210, 4, 45)
 
 MAX_NOTE = 87
 WHITE_KEYS_IN_OCTAVE = {0, 2, 4, 5, 7, 9, 11}
 NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
+
 def current_epoch_millis() -> int:
     return int(time.time() * 1000)
+
 
 def is_white_key(note: int) -> bool:
     if note == 0 or note == 2:
@@ -79,9 +82,9 @@ def arrange_groups_for_learning(num_of_groups: int) -> list[list[int]]:
     while i < len(res):
         cur = res[i]
         if len(cur) > 1:
-            mid = len(cur) // 2 + len(cur)%2
-            res.insert(i+1,cur[mid:len(cur)])
-            res.insert(i+2,cur[:mid])
+            mid = len(cur) // 2 + len(cur) % 2
+            res.insert(i + 1, cur[mid:len(cur)])
+            res.insert(i + 2, cur[:mid])
         i += 1
     res.reverse()
     return res

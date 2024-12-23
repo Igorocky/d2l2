@@ -5,7 +5,7 @@ from typing import Tuple
 import pygame
 from pygame import SurfaceType, Surface, Rect
 
-from common import WHITE, GRAY, note_to_str, current_epoch_millis
+from common import WHITE, GRAY, note_to_str, current_epoch_millis, ERROR_COLOR
 from database import Database
 from gamestate import make_state
 from keyboard import Keyboard
@@ -17,7 +17,9 @@ class GameManager:
     def __init__(self,
                  window_width: int, window_height: int,
                  clefs: list[Clef], pass_note_avg_millis: int,
-                 db_file_path: str):
+                 db_file_path: str,
+                 curr_grp: int,
+                 ):
         self._window_width = window_width
         self._window_height = window_height
         self._database = Database(db_file_path)
@@ -38,7 +40,19 @@ class GameManager:
         self._text_rect.center = (int(window_width / 2), int(keyboard_rect.top / 2))
         self._stats_font = pygame.font.SysFont('monospace', 30)
 
-        self._state = make_state(clefs=clefs, pass_note_avg_millis=pass_note_avg_millis)
+        self._state = make_state(clefs=clefs, pass_note_avg_millis=pass_note_avg_millis, curr_grp=curr_grp)
+
+        self._err_text_surface_obj: Surface | None
+        if not (0 <= self._state.curr_grp < len(self._state.all_question_groups)):
+            self._state.curr_grp = 0
+            err_msg = f'curr_grp must be in the range [1,{len(self._state.all_question_groups)}]'
+            err_font_obj = pygame.font.SysFont('monospace', 30)
+            self._err_text_surface_obj = font_obj.render(err_msg, True, ERROR_COLOR, GRAY)
+            self._err_text_rect = self._err_text_surface_obj.get_rect()
+            self._err_text_rect.center = (int(window_width / 2), int(window_height / 2))
+        else:
+            self._err_text_surface_obj = None
+
         self._mark_needs_rerender()
 
     def mark_rendered(self) -> None:
@@ -48,15 +62,18 @@ class GameManager:
         return self._needs_rerender
 
     def render(self, disp: Surface | SurfaceType) -> None:
-        state = self._state
-        if state.started:
-            if state.show_keyboard:
-                self._keyboard.render(disp)
-            render_note(disp, self._staff_rect, state.remaining_questions[0][0], state.remaining_questions[0][1])
+        if self._err_text_surface_obj is not None:
+            disp.blit(self._err_text_surface_obj, self._err_text_rect)
         else:
-            disp.blit(self._text_surface_obj, self._text_rect)
-            self._keyboard.render(disp)
-        self._render_stats(disp)
+            state = self._state
+            if state.started:
+                if state.show_keyboard:
+                    self._keyboard.render(disp)
+                render_note(disp, self._staff_rect, state.remaining_questions[0][0], state.remaining_questions[0][1])
+            else:
+                disp.blit(self._text_surface_obj, self._text_rect)
+                self._keyboard.render(disp)
+            self._render_stats(disp)
 
     def _render_stats(self, disp: Surface | SurfaceType) -> None:
         state = self._state
