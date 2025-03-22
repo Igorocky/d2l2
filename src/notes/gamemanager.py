@@ -41,7 +41,7 @@ class GameManager:
         self._stats_font = pygame.font.SysFont('monospace', 30)
 
         # self._state = make_state_for_groups(clefs=clefs, pass_note_avg_millis=pass_note_avg_millis, curr_grp=curr_grp)
-        self._state = make_state_for_octaves(octaves=[(Clef.TREBLE, 4)])
+        self._state = make_state_for_octaves(octaves=[(Clef.TREBLE, 3)])
 
         self._err_text_surface_obj: Surface | None
         if not (0 <= self._state.curr_grp < len(self._state.all_question_groups)):

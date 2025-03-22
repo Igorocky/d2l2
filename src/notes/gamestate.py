@@ -2,8 +2,7 @@ from dataclasses import dataclass, field
 import random
 from typing import Tuple
 
-from common import group_by_octaves, arrange_groups_for_learning
-from common import note_to_str
+from common import group_by_octaves, arrange_groups_for_learning, note_to_str, str_to_note
 from staff import get_all_notes
 from staff import Clef
 
@@ -50,6 +49,11 @@ def make_state_for_octaves(octaves:list[Tuple[Clef,int]]) -> State:
         for cl,note in get_all_notes():
             if clef == cl and octave_str == note_to_str(note)[0]:
                 notes_to_ask.append((clef,note))
+        if clef == Clef.TREBLE and octave == 3:
+            notes_to_ask.append((clef,str_to_note('2B')))
+        elif clef == Clef.BASS and octave == 4:
+            notes_to_ask.append((clef,str_to_note('5C')))
+            notes_to_ask.append((clef,str_to_note('5D')))
     all_question_groups: list[list[Tuple[Clef, int]]] = [notes_to_ask]
     return State(
         all_question_groups = all_question_groups,
