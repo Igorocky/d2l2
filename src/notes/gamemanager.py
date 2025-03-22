@@ -7,8 +7,8 @@ from pygame import SurfaceType, Surface, Rect
 
 from common import WHITE, GRAY, note_to_str, current_epoch_millis, ERROR_COLOR
 from database import Database
-from gamestate import make_state
 from keyboard import Keyboard
+from gamestate import make_state_for_groups, make_state_for_octaves
 from staff import Clef
 from staff import render_note
 
@@ -40,7 +40,8 @@ class GameManager:
         self._text_rect.center = (int(window_width / 2), int(keyboard_rect.top / 2))
         self._stats_font = pygame.font.SysFont('monospace', 30)
 
-        self._state = make_state(clefs=clefs, pass_note_avg_millis=pass_note_avg_millis, curr_grp=curr_grp)
+        # self._state = make_state_for_groups(clefs=clefs, pass_note_avg_millis=pass_note_avg_millis, curr_grp=curr_grp)
+        self._state = make_state_for_octaves(octaves=[(Clef.TREBLE, 4)])
 
         self._err_text_surface_obj: Surface | None
         if not (0 <= self._state.curr_grp < len(self._state.all_question_groups)):

@@ -3,6 +3,7 @@ import random
 from typing import Tuple
 
 from common import group_by_octaves, arrange_groups_for_learning
+from common import note_to_str
 from staff import get_all_notes
 from staff import Clef
 
@@ -23,7 +24,7 @@ class State:
     asked_at: int = 0
     first_ans: int | None = None
 
-def make_state(clefs:list[Clef], pass_note_avg_millis:int, curr_grp:int = 0) -> State:
+def make_state_for_groups(clefs:list[Clef], pass_note_avg_millis:int, curr_grp:int = 0) -> State:
     octaves:list[list[Tuple[Clef,int]]] = []
     for clef in clefs:
         all_notes = [n for c,n in get_all_notes() if c == clef]
@@ -40,4 +41,18 @@ def make_state(clefs:list[Clef], pass_note_avg_millis:int, curr_grp:int = 0) -> 
         all_question_groups = all_question_groups,
         pass_note_avg_millis = pass_note_avg_millis,
         curr_grp=curr_grp
+    )
+
+def make_state_for_octaves(octaves:list[Tuple[Clef,int]]) -> State:
+    notes_to_ask:list[Tuple[Clef,int]] = []
+    for clef,octave in octaves:
+        octave_str = str(octave)
+        for cl,note in get_all_notes():
+            if clef == cl and octave_str == note_to_str(note)[0]:
+                notes_to_ask.append((clef,note))
+    all_question_groups: list[list[Tuple[Clef, int]]] = [notes_to_ask]
+    return State(
+        all_question_groups = all_question_groups,
+        pass_note_avg_millis = 1,
+        curr_grp=0
     )
